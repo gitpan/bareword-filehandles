@@ -9,7 +9,7 @@ configure_requires:
   ExtUtils::Depends: 0
   ExtUtils::MakeMaker: 6.31
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 4.200001, CPAN::Meta::Converter version 2.102400'
+generated_by: 'Dist::Zilla version 4.200004, CPAN::Meta::Converter version 2.101670'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -19,8 +19,8 @@ requires:
   B::Hooks::OP::Check: 0
   Lexical::SealRequireHints: 0
   XSLoader: 0
-  perl: 5.008
+  perl: 5.008001
 resources:
   homepage: http://github.com/ilmari/bareword-filehandles/tree
   repository: git://github.com/ilmari/bareword-filehandles.git
-version: 0.001
+version: 0.002

@@ -11,6 +11,10 @@
 # define hv_fetchs(hv, key, lval) hv_fetch(hv, key, strlen(key), lval)
 #endif /* !hv_fetchs */
 
+#ifndef gv_fetchsv
+#define gv_fetchsv(name, flags, sv_type) gv_fetchpv(SvPV_nolen_const(name), flags, sv_type)
+#endif /* !gv_fetchsv */
+
 #define bareword_croak_unless_builtin(op, gv) \
     THX_bareword_croak_unless_builtin(aTHX_ op, gv)
 STATIC void THX_bareword_croak_unless_builtin (pTHX_ const OP *op, const GV *gv) {
@@ -40,7 +44,6 @@ STATIC void THX_bareword_croak_unless_builtin_op (pTHX_ const OP *op, const OP *
 
 STATIC OP *bareword_filehandles_unary_check_op (pTHX_ OP *op, void *user_data) {
     SV **hint = hv_fetchs(GvHV(PL_hintgv), "bareword::filehandles", 0);
-    const OP *first;
 
     PERL_UNUSED_ARG(user_data);
 
