@@ -2,14 +2,19 @@
 #include "perl.h"
 #include "XSUB.h"
 #include "hook_op_check.h"
+#include "ppport.h"
 
-#ifndef PERL_UNUSED_ARG
-# define PERL_UNUSED_ARG(x) PERL_UNUSED_VAR(x)
-#endif /* !PERL_UNUSED_ARG */
+#define PERL_VERSION_DECIMAL(r,v,s) (r*1000000 + v*1000 + s)
+#define PERL_DECIMAL_VERSION \
+	PERL_VERSION_DECIMAL(PERL_REVISION,PERL_VERSION,PERL_SUBVERSION)
+#define PERL_VERSION_GE(r,v,s) \
+	(PERL_DECIMAL_VERSION >= PERL_VERSION_DECIMAL(r,v,s))
 
-#ifndef hv_fetchs
-# define hv_fetchs(hv, key, lval) hv_fetch(hv, key, strlen(key), lval)
-#endif /* !hv_fetchs */
+#if PERL_VERSION_GE(5,9,2)
+#define CONST const
+#else
+#define CONST /**/
+#endif
 
 #ifndef gv_fetchsv
 #define gv_fetchsv(name, flags, sv_type) gv_fetchpv(SvPV_nolen_const(name), flags, sv_type)
@@ -17,7 +22,7 @@
 
 #define bareword_croak_unless_builtin(op, gv) \
     THX_bareword_croak_unless_builtin(aTHX_ op, gv)
-STATIC void THX_bareword_croak_unless_builtin (pTHX_ const OP *op, const GV *gv) {
+STATIC void THX_bareword_croak_unless_builtin (pTHX_ CONST OP *op, const GV *gv) {
     if (gv
         && gv != PL_stdingv
         && gv != PL_stderrgv
@@ -32,7 +37,7 @@ STATIC void THX_bareword_croak_unless_builtin (pTHX_ const OP *op, const GV *gv)
 
 #define bareword_croak_unless_builtin_op(op, argop) \
     THX_bareword_croak_unless_builtin_op(aTHX_ op, argop)
-STATIC void THX_bareword_croak_unless_builtin_op (pTHX_ const OP *op, const OP *argop) {
+STATIC void THX_bareword_croak_unless_builtin_op (pTHX_ CONST OP *op, const OP *argop) {
     if (argop && argop->op_type == OP_GV)
         bareword_croak_unless_builtin(op, cGVOPx_gv(argop));
     else if (argop && argop->op_type == OP_CONST &&
@@ -72,17 +77,16 @@ STATIC OP *bareword_filehandles_stat_check_op (pTHX_ OP *op, void *user_data) {
 
 STATIC OP *bareword_filehandles_list_check_op (pTHX_ OP *op, void *user_data) {
     SV **hint = hv_fetchs(GvHV(PL_hintgv), "bareword::filehandles", 0);
-    const OP *first;
+    OP *child;
     int num_args = user_data ? *(int*)user_data : 1;
 
     if (!hint || !SvOK(*hint))
         return op;
 
-    first = cLISTOPx(op)->op_first;
-    if (first && (first->op_type == OP_PUSHMARK || first->op_type == OP_NULL)) {
-	OP *check = first;
-	while(num_args-- && (check = check->op_sibling))
-	    bareword_croak_unless_builtin_op(op, check);
+    child = cLISTOPx(op)->op_first;
+    if (child && (child->op_type == OP_PUSHMARK || child->op_type == OP_NULL)) {
+	while(num_args-- && (child = child->op_sibling))
+	    bareword_croak_unless_builtin_op(op, child);
     }
 
     return op;

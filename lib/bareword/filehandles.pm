@@ -1,6 +1,6 @@
 package bareword::filehandles;
 BEGIN {
-  $bareword::filehandles::VERSION = '0.002';
+  $bareword::filehandles::VERSION = '0.003';
 }
 # ABSTRACT: disables bareword filehandles
 
@@ -41,7 +41,7 @@ bareword::filehandles - disables bareword filehandles
 
 =head1 VERSION
 
-version 0.002
+version 0.003
 
 =head1 SYNOPSIS
 
